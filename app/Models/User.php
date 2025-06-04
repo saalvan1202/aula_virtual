@@ -21,8 +21,8 @@ class User extends Authenticatable
     ];
 
     protected $fillable = [
-        'id_perfil', 'email',
-        'usuario','id_tipo_contrato','email','telefono','profesion'
+        'id','id_perfil', 'email',
+        'usuario','id_tipo_contrato','email','telefono','profesion', 'registro_completado'
     ];
 
     /**
@@ -58,6 +58,10 @@ class User extends Authenticatable
     public function cursoDocente()
     {
         return $this->hasMany(CursoDocente::class,'id_docente');
+    }
+    public function tokensCorreo()
+    {
+        return $this->hasMany(TokensCorreo::class, 'usuario_id');
     }
     public function scopeJoinPersona($query)
     {

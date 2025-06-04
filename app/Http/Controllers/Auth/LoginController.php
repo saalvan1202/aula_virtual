@@ -57,4 +57,15 @@ class LoginController extends Controller
         $credentials = $request->only($this->username(), 'password');
         return array_merge($credentials, ['estado' => 'A']);
     }
+    protected function authenticated(Request $request, $user)
+    {
+        if ($user->registro_completado === 'N' && $user->id_perfil === 5) {
+            auth()->logout();
+
+            return redirect()->route('login')
+                ->withErrors([
+                    'email' => 'Esta cuenta no existe en el sistema',
+                ]);
+        }
+    }
 }
