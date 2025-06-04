@@ -28,7 +28,7 @@
                 >
                     <div class="col-sm-8 col-md-6 col-lg-12 px-xl-2 mx-auto">
                         <h2 class="card-title font-weight-bold mb-2">
-                            Iniciar Sesión
+                            Registrarse
                         </h2>
                         <BAlert
                             v-height-fade
@@ -48,94 +48,51 @@
                             @submit.prevent="submit"
                         >
                             <div class="form-group">
-                                <label class="d-block" for="login-email"
-                                    >Usuario</label
+                                <label class="d-block" for="validated-dni"
+                                    >DNI</label
                                 >
                                 <input
                                     type="text"
-                                    v-model="form.usuario"
+                                    v-model="form.dni"
                                     class="form-control"
                                     :class="{
-                                        'is-invalid': form.errors.usuario,
+                                        'is-invalid': form.errors.dni,
                                     }"
-                                    id="login-email"
+                                    id="validated-dni"
+                                    autofocus
+                                />
+                                <small
+                                    class="text-danger"
+                                    v-if="form.errors.dni"
+                                    >{{ form.errors.dni }}</small
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label class="d-block" for="validated-email"
+                                    >Correo</label
+                                >
+                                <input
+                                    type="text"
+                                    v-model="form.email"
+                                    class="form-control"
+                                    :class="{
+                                        'is-invalid': form.errors.email,
+                                    }"
+                                    id="validated-email"
                                     v-focus
                                 />
                                 <small
                                     class="text-danger"
-                                    v-if="form.errors.usuario"
-                                    >{{ form.errors.usuario }}</small
+                                    v-if="form.errors.email"
+                                    >{{ form.errors.email }}</small
                                 >
                             </div>
-                            <div class="form-group">
-                                <label class="d-block" for="login-password"
-                                    >Contraseña</label
-                                >
-                                <div class="input-group input-group-merge">
-                                    <input
-                                        :type="passwordFieldType"
-                                        v-model="form.password"
-                                        class="form-control form-control-merge"
-                                        :class="{
-                                            'is-invalid': form.errors.password,
-                                        }"
-                                        id="login-password"
-                                    />
-                                    <div class="input-group-append">
-                                        <div
-                                            class="input-group-text"
-                                            :class="{
-                                                'text-invalid':
-                                                    form.errors.password,
-                                            }"
-                                        >
-                                            <feather-icon
-                                                class="cursor-pointer"
-                                                :icon="passwordToggleIcon"
-                                                @click="
-                                                    togglePasswordVisibility
-                                                "
-                                            />
-                                        </div>
-                                    </div>
-                                    <small
-                                        class="text-danger"
-                                        style="width: 100%"
-                                        v-if="form.errors.password"
-                                        >{{ form.errors.password }}</small
-                                    >
-                                </div>
-                            </div>
-                            <div class="form-group" v-if="canResetPassword">
-                                <div style="text-align: right">
-                                    <Link :href="routeTo('password/reset')">
-                                        <small>¿Olvidaste tu contraseña?</small>
-                                    </Link>
-                                </div>
-                            </div>
-                            <!-- <div
-                                class="form-group"
-                                style="padding-bottom: 1em"
-                            ></div> -->
+
                             <button
                                 class="btn btn-primary btn-block"
-                                :disabled="form.processing"
+                                type="submit"
                             >
-                                <div
-                                    v-if="form.processing"
-                                    class="spinner-border spinner-border-sm"
-                                ></div>
-                                Ingresar
-                            </button>
-                            <button
-                                class="btn btn-secondary btn-block"
-                                :disabled="form.processing"
-                            >
-                                <div
-                                    v-if="form.processing"
-                                    class="spinner-border spinner-border-sm"
-                                ></div>
-                                Registrarse
+                                Enviar enlace
                             </button>
                         </form>
                     </div>
@@ -158,30 +115,26 @@ export default {
     },
     data() {
         return {
-            passwordFieldType: "password",
             form: useForm({
-                usuario: "",
-                password: "",
-                remember: null,
+                dni: "",
+                email: "",
             }),
         };
     },
     methods: {
-        togglePasswordVisibility() {
-            this.passwordFieldType =
-                this.passwordFieldType === "password" ? "text" : "password";
-        },
         submit() {
-            this.form.post(this.routeTo("login"), {
-                onFinish: () => this.form.reset("password"),
-            });
-        },
-    },
-    computed: {
-        passwordToggleIcon() {
-            return this.passwordFieldType === "password"
-                ? "EyeIcon"
-                : "EyeOffIcon";
+            this.$http
+                .post(this.routeTo("registro/verificar"), {
+                    dni: this.form.dni,
+                    email: this.form.email,
+                })
+                .then((response) => {
+                    alertSuccess("Enlace enviado");
+                    this.form.reset();
+                })
+                .catch((error) => {
+                    // Manejar errores
+                });
         },
     },
 };

@@ -129,12 +129,8 @@
                             </button>
                             <button
                                 class="btn btn-secondary btn-block"
-                                :disabled="form.processing"
+                                @click.prevent="redirect('register')"
                             >
-                                <div
-                                    v-if="form.processing"
-                                    class="spinner-border spinner-border-sm"
-                                ></div>
                                 Registrarse
                             </button>
                         </form>
@@ -175,6 +171,9 @@ export default {
             this.form.post(this.routeTo("login"), {
                 onFinish: () => this.form.reset("password"),
             });
+        },
+        redirect(name = "") {
+            this.$inertia.visit(this.routeTo(`${name}`));
         },
     },
     computed: {

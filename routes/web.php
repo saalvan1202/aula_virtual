@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ArchivoController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\LogViewerController;
 use App\Http\Controllers\UbigeoController;
 use Illuminate\Support\Facades\Route;
@@ -51,7 +52,10 @@ Route::prefix('archivos')->group(function(){
     Route::get('/mostrar/{id}/{archivo}',[ArchivoController::class,'preview'])->name('archivos.preview');
 });
 Auth::routes([
-    'register' => false,
     'confirm'=>false
 ]);
+Route::get('/register', [RegisterController::class, 'index'])->name('register.index');
+Route::get('/continuar-registro/{token}', [RegisterController::class, 'continuarRegistro'])->name('registro.continuar-registro');
+Route::post('/finalizar-registro/{token}', [RegisterController::class, 'finalizarRegistro'])->name('registro.finalizar-registro');
+Route::post('/registro/verificar', [RegisterController::class, 'verificarDniEmail'])->name('registro.verificar');
 
