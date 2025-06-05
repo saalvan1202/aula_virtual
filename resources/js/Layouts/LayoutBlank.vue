@@ -1,15 +1,13 @@
 <template>
     <div class="h-100">
-        <slot/>
+        <slot />
     </div>
 </template>
 
 <script>
 export default {
-    name: "LayoutBlank"
-}
+    name: "LayoutBlank",
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

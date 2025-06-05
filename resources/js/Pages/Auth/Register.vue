@@ -49,7 +49,10 @@
                         >
                             <div class="form-group">
                                 <label class="d-block" for="validated-dni"
-                                    >DNI</label
+                                    >DNI
+                                    <span style="color: red; margin-left: 2px">
+                                        *
+                                    </span></label
                                 >
                                 <input
                                     type="text"
@@ -69,7 +72,10 @@
                             </div>
                             <div class="form-group">
                                 <label class="d-block" for="validated-email"
-                                    >Correo</label
+                                    >Correo
+                                    <span style="color: red; margin-left: 2px">
+                                        *
+                                    </span></label
                                 >
                                 <input
                                     type="text"
@@ -91,7 +97,16 @@
                             <button
                                 class="btn btn-primary btn-block"
                                 type="submit"
+                                :disabled="
+                                    isSubmitting || !form.dni || !form.email
+                                "
                             >
+                                <span
+                                    v-if="isSubmitting"
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span>
                                 Enviar enlace
                             </button>
                         </form>
@@ -106,6 +121,12 @@
 <script>
 import { useForm, Link } from "@inertiajs/vue2";
 import LayoutBlank from "../../Layouts/LayoutBlank";
+import {
+    alertSuccess,
+    alertWarning,
+    confirm,
+    alertError,
+} from "../../sweetAlert2.js";
 export default {
     name: "Register",
     components: { LayoutBlank, Link },
@@ -119,21 +140,30 @@ export default {
                 dni: "",
                 email: "",
             }),
+            isSubmitting: false,
         };
     },
     methods: {
         submit() {
+            this.isSubmitting = true;
+
             this.$http
                 .post(this.routeTo("registro/verificar"), {
                     dni: this.form.dni,
                     email: this.form.email,
                 })
                 .then((response) => {
-                    alertSuccess("Enlace enviado");
+                    alertSuccess(response.data.message || "Enlace enviado");
                     this.form.reset();
                 })
                 .catch((error) => {
-                    // Manejar errores
+                    alertError(
+                        error.response.data.message ||
+                            "Ocurrió un error al enviar el enlace."
+                    );
+                })
+                .finally(() => {
+                    this.isSubmitting = false;
                 });
         },
     },

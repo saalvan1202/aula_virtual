@@ -3,7 +3,7 @@
         <div class="auth-wrapper auth-v2">
             <div class="row auth-inner m-0">
                 <!-- Brand logo-->
-                <a class="brand-logo">
+                <a class="brand-logo d-none d-md-block">
                     <img :src="$page.props.imagenes.logo" />
                     <h2 class="brand-text text-primary ml-1 m-2">
                         {{ $page.props.app_name }}
@@ -26,7 +26,9 @@
                 <div
                     class="col-lg-4 d-flex align-items-center auth-bg px-2 p-lg-3"
                 >
-                    <div class="col-sm-8 col-md-6 col-lg-12 px-xl-2 mx-auto">
+                    <div
+                        class="col-sm-8 col-md-6 col-lg-12 px-xl-2 mt-3 mx-auto"
+                    >
                         <h2 class="card-title font-weight-bold mb-2">
                             Datos personales
                         </h2>
@@ -47,6 +49,7 @@
                                     }"
                                     id="validated-nombres"
                                     autofocus
+                                    style="text-transform: uppercase"
                                 />
                                 <small
                                     class="text-danger"
@@ -70,6 +73,7 @@
                                     }"
                                     id="validated-apellido_paterno"
                                     autofocus
+                                    style="text-transform: uppercase"
                                 />
                                 <small
                                     class="text-danger"
@@ -93,6 +97,7 @@
                                     }"
                                     id="validated-apellido_materno"
                                     autofocus
+                                    style="text-transform: uppercase"
                                 />
                                 <small
                                     class="text-danger"
@@ -260,10 +265,10 @@
                             </div>
 
                             <button
-                                class="btn btn-primary btn-block"
+                                class="btn btn-primary btn-block mb-3"
                                 type="submit"
                             >
-                                Enviar enlace
+                                Completar registro
                             </button>
                         </form>
                     </div>
@@ -329,13 +334,27 @@ export default {
             // Limpiar errores previos si pasa validación
             this.form.clearErrors();
 
-            console.log("Enviando");
-            console.log(this.form.data());
-            const { usuario, email, ...data } = this.form.data();
-            console.log(data);
+            const {
+                usuario,
+                email,
+                nombres,
+                apellido_paterno,
+                apellido_materno,
+                ...data
+            } = this.form.data();
+
+            const new_data = {
+                ...data,
+                nombres: this.form.nombres.toUpperCase(),
+                apellido_paterno: this.form.apellido_paterno.toUpperCase(),
+                apellido_materno: this.form.apellido_materno.toUpperCase(),
+            };
 
             this.$http
-                .post(this.routeTo(`finalizar-registro/${this.token}`), data)
+                .post(
+                    this.routeTo(`finalizar-registro/${this.token}`),
+                    new_data
+                )
                 .then((response) => {
                     alertSuccess("Enlace enviado");
                     this.form.reset();

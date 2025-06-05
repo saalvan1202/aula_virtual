@@ -98,15 +98,15 @@ class RegisterController extends Controller
         })->where('email', $request->email)->first();
 
         if (!$user) {
-            return back()->withErrors([
-                'dni' => 'DNI o correo no registrados.',
-            ]);
+            return response()->json([
+                'message' => 'Este usuario no se encuentra matriculado.',
+            ], 400);
         }
 
         if ($user->registro_completado === 'S') {
-            return back()->withErrors([
-                'error' => 'Este usuario ya se encuentra registrado en el sistema.',
-            ]);
+            return response()->json([
+                'message' => 'Este usuario ya se encuentra registrado en el sistema.',
+            ], 400);
         }
 
         TokensCorreo::where('usuario_id', $user->id)->delete();
@@ -124,7 +124,9 @@ class RegisterController extends Controller
         // Enviar correo con el enlace
         Mail::to($user->email)->send(new ContinuarRegistro($user, $token));
 
-        return redirect()->back()->with('status', 'Se ha enviado un enlace a tu correo para continuar el registro.');
+        return response()->json([
+            'message' => 'Se ha enviado un enlace a tu correo para continuar el registro.',
+        ], 200);
     }
 
     public function continuarRegistro($token)
