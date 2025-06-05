@@ -71,7 +71,9 @@ export default {
                     otp_code: this.form.otp_code,
                 })
                 .then((response) => {
-                    this.$inertia.visit(this.routeTo("/"));
+                    // this.$inertia.visit(this.routeTo("/"));
+                    // haz un reload window.location.reload();
+                    window.location.reload();
                 })
                 .catch((error) => {
                     console.log(error.response);
