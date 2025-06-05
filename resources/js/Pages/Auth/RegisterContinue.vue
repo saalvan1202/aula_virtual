@@ -38,14 +38,17 @@
                         >
                             <div class="form-group">
                                 <label class="d-block" for="validated-nombres"
-                                    >Nombre(s)</label
+                                    >Nombre(s)
+                                    <span style="color: red; margin-left: 2px">
+                                        *
+                                    </span></label
                                 >
                                 <input
                                     type="text"
                                     v-model="form.nombres"
                                     class="form-control"
                                     :class="{
-                                        'is-invalid': form.errors.nombres,
+                                        'is-invalid': errors.nombres,
                                     }"
                                     id="validated-nombres"
                                     autofocus
@@ -53,23 +56,25 @@
                                 />
                                 <small
                                     class="text-danger"
-                                    v-if="form.errors.nombres"
-                                    >{{ form.errors.nombres }}</small
+                                    v-if="errors.nombres"
+                                    >{{ errors.nombres }}</small
                                 >
                             </div>
                             <div class="form-group">
                                 <label
                                     class="d-block"
                                     for="validated-apellido_paterno"
-                                    >Apellido Paterno</label
+                                    >Apellido Paterno
+                                    <span style="color: red; margin-left: 2px">
+                                        *
+                                    </span></label
                                 >
                                 <input
                                     type="text"
                                     v-model="form.apellido_paterno"
                                     class="form-control"
                                     :class="{
-                                        'is-invalid':
-                                            form.errors.apellido_paterno,
+                                        'is-invalid': errors.apellido_paterno,
                                     }"
                                     id="validated-apellido_paterno"
                                     autofocus
@@ -77,23 +82,25 @@
                                 />
                                 <small
                                     class="text-danger"
-                                    v-if="form.errors.apellido_paterno"
-                                    >{{ form.errors.apellido_paterno }}</small
+                                    v-if="errors.apellido_paterno"
+                                    >{{ errors.apellido_paterno }}</small
                                 >
                             </div>
                             <div class="form-group">
                                 <label
                                     class="d-block"
                                     for="validated-apellido_materno"
-                                    >Apellido Materno</label
+                                    >Apellido Materno
+                                    <span style="color: red; margin-left: 2px">
+                                        *
+                                    </span></label
                                 >
                                 <input
                                     type="text"
                                     v-model="form.apellido_materno"
                                     class="form-control"
                                     :class="{
-                                        'is-invalid':
-                                            form.errors.apellido_materno,
+                                        'is-invalid': errors.apellido_materno,
                                     }"
                                     id="validated-apellido_materno"
                                     autofocus
@@ -101,19 +108,22 @@
                                 />
                                 <small
                                     class="text-danger"
-                                    v-if="form.errors.apellido_materno"
-                                    >{{ form.errors.apellido_materno }}</small
+                                    v-if="errors.apellido_materno"
+                                    >{{ errors.apellido_materno }}</small
                                 >
                             </div>
                             <div class="form-group">
                                 <label class="d-block" for="validated-sexo"
-                                    >Sexo</label
+                                    >Sexo
+                                    <span style="color: red; margin-left: 2px">
+                                        *
+                                    </span></label
                                 >
                                 <select
                                     v-model="form.sexo"
                                     class="form-control"
                                     :class="{
-                                        'is-invalid': form.errors.sexo,
+                                        'is-invalid': errors.sexo,
                                     }"
                                     id="validated-sexo"
                                 >
@@ -123,11 +133,9 @@
                                     <option value="M">MASCULINO</option>
                                     <option value="F">FEMENINO</option>
                                 </select>
-                                <small
-                                    class="text-danger"
-                                    v-if="form.errors.sexo"
-                                    >{{ form.errors.sexo }}</small
-                                >
+                                <small class="text-danger" v-if="errors.sexo">{{
+                                    errors.sexo
+                                }}</small>
                             </div>
                             <h2 class="card-title font-weight-bold my-2">
                                 Datos de usuario
@@ -176,7 +184,10 @@
                             </div>
                             <div class="form-group">
                                 <label class="d-block" for="login-password"
-                                    >Contraseña</label
+                                    >Contraseña
+                                    <span style="color: red; margin-left: 2px">
+                                        *
+                                    </span></label
                                 >
                                 <div class="input-group input-group-merge">
                                     <input
@@ -208,7 +219,7 @@
                                     <small
                                         class="text-danger"
                                         style="width: 100%"
-                                        v-if="form.errors.password"
+                                        v-if="form.errors.password !== ''"
                                         >{{ form.errors.password }}</small
                                     >
                                 </div>
@@ -217,7 +228,10 @@
                                 <label
                                     class="d-block"
                                     for="login-confirm-password"
-                                    >Confirmar contraseña</label
+                                    >Confirmar contraseña
+                                    <span style="color: red; margin-left: 2px">
+                                        *
+                                    </span></label
                                 >
                                 <div class="input-group input-group-merge">
                                     <input
@@ -267,7 +281,18 @@
                             <button
                                 class="btn btn-primary btn-block mb-3"
                                 type="submit"
+                                :disabled="
+                                    isSubmitting ||
+                                    !form.password ||
+                                    !form.password_confirmation
+                                "
                             >
+                                <span
+                                    v-if="isSubmitting"
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                ></span>
                                 Completar registro
                             </button>
                         </form>
@@ -282,6 +307,7 @@
 <script>
 import { useForm, Link } from "@inertiajs/vue2";
 import LayoutBlank from "../../Layouts/LayoutBlank";
+import { alertSuccess, alertWarning } from "../../sweetAlert2";
 export default {
     name: "Register",
     components: { LayoutBlank, Link },
@@ -304,6 +330,8 @@ export default {
                 password_confirmation: "",
             }),
             passwordFieldType: "password",
+            errors: {},
+            isSubmitting: false,
         };
     },
     methods: {
@@ -316,8 +344,21 @@ export default {
             return regex.test(password);
         },
         submit() {
-            console.log("sadasdas");
             // Validar fortaleza de contraseña
+            if (this.form.password === "") {
+                alertWarning(
+                    "La contraseña es obligatoria y debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial."
+                );
+                return;
+            }
+
+            if (this.form.password_confirmation === "") {
+                alertWarning(
+                    "La confirmación de la contraseña es obligatoria."
+                );
+                return;
+            }
+
             if (!this.isPasswordStrong(this.form.password)) {
                 this.form.errors.password =
                     "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
@@ -330,9 +371,6 @@ export default {
                     "Las contraseñas no coinciden.";
                 return;
             }
-
-            // Limpiar errores previos si pasa validación
-            this.form.clearErrors();
 
             const {
                 usuario,
@@ -350,17 +388,41 @@ export default {
                 apellido_materno: this.form.apellido_materno.toUpperCase(),
             };
 
+            this.isSubmitting = true;
+
             this.$http
                 .post(
                     this.routeTo(`finalizar-registro/${this.token}`),
                     new_data
                 )
                 .then((response) => {
-                    alertSuccess("Enlace enviado");
+                    alertSuccess("Registro completado exitosamente.");
                     this.form.reset();
+                    this.form.clearErrors();
+                    this.errors = {};
+                    this.$inertia.visit(this.routeTo("login"));
                 })
                 .catch((error) => {
-                    // Manejar errores
+                    if (error.response.status === 422) {
+                        const rawErrors = error.response.data.errors || {};
+                        this.errors = Object.keys(rawErrors).reduce(
+                            (acc, key) => {
+                                acc[key] = Array.isArray(rawErrors[key])
+                                    ? rawErrors[key][0]
+                                    : rawErrors[key];
+                                return acc;
+                            },
+                            {}
+                        );
+                    } else {
+                        alertError(
+                            error.response.data.message ||
+                                "Ocurrió un error al registrarse."
+                        );
+                    }
+                })
+                .finally(() => {
+                    this.isSubmitting = false;
                 });
         },
     },

@@ -84,11 +84,15 @@ class RegisterController extends Controller
         return Inertia::render('Auth/Register');
     }
 
+    public function tokenError()
+    {
+        return Inertia::render('Auth/TokenError');
+    }
 
     public function verificarDniEmail(Request $request)
     {
         $request->validate([
-            'dni' => 'required|string|size:8',
+            'dni' => 'required|string|size:8|regex:/^\d{8}$/',
             'email' => 'required|email',
         ], []);
 
@@ -135,28 +139,28 @@ class RegisterController extends Controller
         $tokenRecord = TokensCorreo::where('token', $token)->first();
 
         if (!$tokenRecord) {
-            return redirect()->route('register.index')->withErrors(['token' => 'Token inválido.']);
+            return redirect()->route('register.token-error')->withErrors(['token' => 'El error se produjo debido a: Token inválido.']);
         }
 
         $createdAt = $tokenRecord->created_at;
         $now = Carbon::now();
 
-        if ($now->diffInMinutes($createdAt) > 30) {
-            return redirect()->route('register.index')->withErrors(['token' => 'Token expirado.']);
+        if ($now->diffInMinutes($createdAt) > 5) {
+            return redirect()->route('register.token-error')->withErrors(['token' => 'El error se produjo debido a: Token expirado.']);
         }
 
         // Obtener el usuario asociado al token
         $user = User::with('persona')->find($tokenRecord->usuario_id);
 
         if (!$user) {
-            return redirect()->route('register.index')->withErrors(['user' => 'Usuario no encontrado.']);
+            return redirect()->route('register.token-error')->withErrors(['token' => 'El error se produjo debido a: Usuario no encontrado.']);
         }
 
         // Aquí puedes redirigir al usuario a una vista para completar su registro
         return Inertia::render('Auth/RegisterContinue', ['user' => $user, 'token' => $token]);
     }
 
-     public function finalizarRegistro($token, Request $request)
+    public function finalizarRegistro($token, Request $request)
     {
         $tokenRecord = TokensCorreo::where('token', $token)->first();
 
@@ -167,7 +171,7 @@ class RegisterController extends Controller
         $createdAt = $tokenRecord->created_at;
         $now = Carbon::now();
 
-        if ($now->diffInMinutes($createdAt) > 30) {
+        if ($now->diffInMinutes($createdAt) > 5) {
             $tokenRecord->delete();
             return redirect()->route('register.index')->withErrors(['token' => 'Token expirado.']);
         }
@@ -175,9 +179,9 @@ class RegisterController extends Controller
         $user = User::with('persona')->findOrFail($tokenRecord->usuario_id);
 
         $request->validate([
-            'nombres' => ['required', 'string', 'max:150', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u'],
-            'apellido_paterno' => ['required', 'string', 'max:150', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u'],
-            'apellido_materno' => ['required', 'string', 'max:150', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u'],
+            'nombres' => ['required', 'string', 'min:1' , 'max:150', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u'],
+            'apellido_paterno' => ['required', 'string', 'min:1' , 'max:150', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u'],
+            'apellido_materno' => ['required', 'string', 'min:1' , 'max:150', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u'],
             'sexo' => ['required', 'string', 'in:M,F'],
             'password' => [
                 'required',
@@ -188,6 +192,8 @@ class RegisterController extends Controller
                     ->symbols(),      
                 'confirmed',           
             ],
+        ],[], [
+            'password' => 'contraseña',
         ]);
 
         if ($user->persona) {

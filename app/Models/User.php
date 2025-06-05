@@ -21,7 +21,7 @@ class User extends Authenticatable
     ];
 
     protected $fillable = [
-        'id','id_perfil', 'email',
+        'id_perfil', 'email',
         'usuario','id_tipo_contrato','email','telefono','profesion', 'registro_completado'
     ];
 

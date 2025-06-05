@@ -147,24 +147,16 @@ export default {
             this.isSubmitting = true;
 
             this.$http
-                .post(
-                    this.routeTo("registro/verificar"),
-                    {
-                        dni: this.form.dni,
-                        email: this.form.email,
-                    },
-                    {
-                        headers: {
-                            "X-Inertia-Error-Bag": "register",
-                        },
-                    }
-                )
+                .post(this.routeTo("registro/verificar"), {
+                    dni: this.form.dni,
+                    email: this.form.email,
+                })
                 .then((response) => {
                     alertSuccess(response.data.message || "Enlace enviado");
                     this.form.reset();
+                    this.errors = {};
                 })
                 .catch((error) => {
-                    console.log(error.response);
                     if (error.response.status === 422) {
                         const rawErrors = error.response.data.errors || {};
                         this.errors = Object.keys(rawErrors).reduce(

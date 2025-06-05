@@ -56,6 +56,7 @@ Auth::routes([
     'confirm'=>false
 ]);
 Route::get('/register', [RegisterController::class, 'index'])->name('register.index');
+Route::get('/token-error', [RegisterController::class, 'tokenError'])->name('register.token-error');
 Route::get('/continuar-registro/{token}', [RegisterController::class, 'continuarRegistro'])->name('registro.continuar-registro');
 Route::post('/finalizar-registro/{token}', [RegisterController::class, 'finalizarRegistro'])->name('registro.finalizar-registro');
 Route::post('/registro/verificar', [RegisterController::class, 'verificarDniEmail'])->name('registro.verificar');
