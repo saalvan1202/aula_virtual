@@ -75,6 +75,9 @@ export default {
                 })
                 .catch((error) => {
                     console.log(error.response);
+                })
+                .finally(() => {
+                    this.$inertia.visit(this.routeTo("/"));
                 });
         },
     },
