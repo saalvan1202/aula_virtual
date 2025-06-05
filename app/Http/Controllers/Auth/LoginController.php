@@ -61,22 +61,38 @@ class LoginController extends Controller
         $credentials = $request->only($this->username(), 'password');
         return array_merge($credentials, ['estado' => 'A']);
     }
-    protected function authenticated(Request $request, $user)
-    {
-        if ($user->registro_completado === 'N' && $user->id_perfil === 5) {
-            auth()->logout();
+    // protected function authenticated(Request $request, $user)
+    // {
+    //     if ($user->registro_completado === 'N' && $user->id_perfil === 5) {
+    //         auth()->logout();
 
-            return redirect()->route('login')
-                ->withErrors([
-                    'usuario' => 'Esta cuenta no existe en el sistema',
-                ]);
-        }
-    }
-      public function login(Request $request)
+    //         return redirect()->route('login')
+    //             ->withErrors([
+    //                 'usuario' => 'Esta cuenta no existe en el sistema',
+    //             ]);
+    //     }
+    // }
+    public function login(Request $request)
     {
         $this->validateLogin($request);
 
         $user = User::where($this->username(), $request->{$this->username()})->first();
+
+        if (!$user) {
+
+            return back()->withErrors([
+                $this->username() => 'Esta cuenta no existe en el sistema',
+            ]);
+        }
+
+        if ($user->registro_completado === 'N' && $user->id_perfil === 5) {
+
+            auth()->logout();
+            
+            return back()->withErrors([
+                $this->username() => 'Esta cuenta no existe en el sistema',
+            ]);
+        }
 
         if ($user && Auth::validate($this->credentials($request))) {
             //Generar OTP y guardar

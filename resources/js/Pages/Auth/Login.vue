@@ -49,7 +49,7 @@
                         >
                             <div class="form-group">
                                 <label class="d-block" for="login-email"
-                                    >Usuario</label
+                                    >Correo</label
                                 >
                                 <input
                                     type="text"
