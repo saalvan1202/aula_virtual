@@ -75,10 +75,9 @@ export default {
                 })
                 .catch((error) => {
                     console.log(error.response);
-                })
-                .finally(() => {
-                    window.location.reload(); // Uncomment if you want to force a reload
                 });
+
+            window.location.reload();
         },
     },
 };
