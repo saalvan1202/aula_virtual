@@ -278,7 +278,7 @@ export default {
         setForm(data) {
             this.setFormData(this.form, data);
         },
-        reset(){
+        reset() {
             this.form.reset();
             this.clearErrors();
         },

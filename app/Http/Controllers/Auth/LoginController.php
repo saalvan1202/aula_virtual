@@ -64,7 +64,7 @@ class LoginController extends Controller
 
             return redirect()->route('login')
                 ->withErrors([
-                    'email' => 'Esta cuenta no existe en el sistema',
+                    'usuario' => 'Esta cuenta no existe en el sistema',
                 ]);
         }
     }

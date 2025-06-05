@@ -59,16 +59,14 @@
                                     v-model="form.dni"
                                     class="form-control"
                                     :class="{
-                                        'is-invalid': form.errors.dni,
+                                        'is-invalid': errors.dni,
                                     }"
                                     id="validated-dni"
                                     autofocus
                                 />
-                                <small
-                                    class="text-danger"
-                                    v-if="form.errors.dni"
-                                    >{{ form.errors.dni }}</small
-                                >
+                                <small class="text-danger" v-if="errors.dni">{{
+                                    errors.dni
+                                }}</small>
                             </div>
                             <div class="form-group">
                                 <label class="d-block" for="validated-email"
@@ -82,15 +80,15 @@
                                     v-model="form.email"
                                     class="form-control"
                                     :class="{
-                                        'is-invalid': form.errors.email,
+                                        'is-invalid': errors.email,
                                     }"
                                     id="validated-email"
                                     v-focus
                                 />
                                 <small
                                     class="text-danger"
-                                    v-if="form.errors.email"
-                                    >{{ form.errors.email }}</small
+                                    v-if="errors.email"
+                                    >{{ errors.email }}</small
                                 >
                             </div>
 
@@ -141,6 +139,7 @@ export default {
                 email: "",
             }),
             isSubmitting: false,
+            errors: {},
         };
     },
     methods: {
@@ -148,19 +147,41 @@ export default {
             this.isSubmitting = true;
 
             this.$http
-                .post(this.routeTo("registro/verificar"), {
-                    dni: this.form.dni,
-                    email: this.form.email,
-                })
+                .post(
+                    this.routeTo("registro/verificar"),
+                    {
+                        dni: this.form.dni,
+                        email: this.form.email,
+                    },
+                    {
+                        headers: {
+                            "X-Inertia-Error-Bag": "register",
+                        },
+                    }
+                )
                 .then((response) => {
                     alertSuccess(response.data.message || "Enlace enviado");
                     this.form.reset();
                 })
                 .catch((error) => {
-                    alertError(
-                        error.response.data.message ||
-                            "Ocurrió un error al enviar el enlace."
-                    );
+                    console.log(error.response);
+                    if (error.response.status === 422) {
+                        const rawErrors = error.response.data.errors || {};
+                        this.errors = Object.keys(rawErrors).reduce(
+                            (acc, key) => {
+                                acc[key] = Array.isArray(rawErrors[key])
+                                    ? rawErrors[key][0]
+                                    : rawErrors[key];
+                                return acc;
+                            },
+                            {}
+                        );
+                    } else {
+                        alertError(
+                            error.response.data.message ||
+                                "Ocurrió un error al enviar el enlace."
+                        );
+                    }
                 })
                 .finally(() => {
                     this.isSubmitting = false;

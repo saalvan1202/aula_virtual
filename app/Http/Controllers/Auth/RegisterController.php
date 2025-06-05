@@ -90,7 +90,7 @@ class RegisterController extends Controller
         $request->validate([
             'dni' => 'required|string|size:8',
             'email' => 'required|email',
-        ]);
+        ], []);
 
         // Buscar al usuario por DNI y correo
         $user = User::whereHas('persona', function ($q) use ($request) {
