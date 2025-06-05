@@ -76,8 +76,6 @@ export default {
                 .catch((error) => {
                     console.log(error.response);
                 });
-
-            window.location.reload();
         },
     },
 };
