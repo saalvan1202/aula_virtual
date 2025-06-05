@@ -54,7 +54,7 @@ export default {
     },
     methods: {
         submit() {
-            this.form.post(this.routeTo("otp-verify"));
+            this.form.post("/otp-verify");
         },
     },
 };
