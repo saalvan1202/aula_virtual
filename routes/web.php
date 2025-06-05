@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ArchivoController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\LogViewerController;
 use App\Http\Controllers\UbigeoController;
@@ -58,4 +59,5 @@ Route::get('/register', [RegisterController::class, 'index'])->name('register.in
 Route::get('/continuar-registro/{token}', [RegisterController::class, 'continuarRegistro'])->name('registro.continuar-registro');
 Route::post('/finalizar-registro/{token}', [RegisterController::class, 'finalizarRegistro'])->name('registro.finalizar-registro');
 Route::post('/registro/verificar', [RegisterController::class, 'verificarDniEmail'])->name('registro.verificar');
-
+Route::get('otp', [LoginController::class, 'showOtpForm'])->name('otp.form');
+Route::post('/otp-verify', [LoginController::class, 'verifyOtp'])->name('otp.verify');

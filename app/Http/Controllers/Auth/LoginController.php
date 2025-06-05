@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OtpCode;
+use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -42,7 +46,7 @@ class LoginController extends Controller
     }
     public function username()
     {
-        return 'usuario';
+        return 'email';
     }
     public function showLoginForm(Request $request)
     {
@@ -67,5 +71,59 @@ class LoginController extends Controller
                     'usuario' => 'Esta cuenta no existe en el sistema',
                 ]);
         }
+    }
+      public function login(Request $request)
+    {
+        $this->validateLogin($request);
+
+        $user = User::where($this->username(), $request->{$this->username()})->first();
+
+        if ($user && Auth::validate($this->credentials($request))) {
+            //Generar OTP y guardar
+            $otp = rand(100000, 999999); // 6 dígitos
+            $user->otp_code = $otp;
+            $user->otp_expires_at = now()->addMinutes(5);
+            $user->save();
+
+            //Enviar OTP por correo
+            Mail::to($user->email)->send(new OtpCode($user, $otp));
+
+            //Guardar en sesión temporal
+            session([
+                'otp_user_id' => $user->id,
+            ]);
+
+           return redirect()->route('otp.form');
+        }
+
+            return back()->withErrors([
+                $this->username() => 'Credenciales inválidas.',
+            ]);
+    }
+
+    public function showOtpForm()
+    {
+        return Inertia::render('Auth/OtpVerify');
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'otp_code' => 'required',
+        ]);
+
+        $user = User::find(session('otp_user_id'));
+
+        if (!$user || $user->otp_code !== $request->otp_code || now()->greaterThan($user->otp_expires_at)) {
+            return back()->withErrors(['otp_code' => 'Código inválido o expirado.']);
+        }
+
+        $user->otp_code = null;
+        $user->otp_expires_at = null;
+        $user->save();
+
+        Auth::login($user);
+
+        return redirect()->intended($this->redirectPath());
     }
 }

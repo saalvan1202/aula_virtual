@@ -53,18 +53,18 @@
                                 >
                                 <input
                                     type="text"
-                                    v-model="form.usuario"
+                                    v-model="form.email"
                                     class="form-control"
                                     :class="{
-                                        'is-invalid': form.errors.usuario,
+                                        'is-invalid': form.errors.email,
                                     }"
                                     id="login-email"
                                     v-focus
                                 />
                                 <small
                                     class="text-danger"
-                                    v-if="form.errors.usuario"
-                                    >{{ form.errors.usuario }}</small
+                                    v-if="form.errors.email"
+                                    >{{ form.errors.email }}</small
                                 >
                             </div>
                             <div class="form-group">
@@ -156,7 +156,7 @@ export default {
         return {
             passwordFieldType: "password",
             form: useForm({
-                usuario: "",
+                email: "",
                 password: "",
                 remember: null,
             }),
