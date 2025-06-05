@@ -77,7 +77,7 @@ export default {
                     console.log(error.response);
                 })
                 .finally(() => {
-                    this.$inertia.visit(this.routeTo("/"));
+                    window.location.reload(); // Uncomment if you want to force a reload
                 });
         },
     },
