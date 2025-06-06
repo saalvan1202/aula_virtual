@@ -71,7 +71,7 @@ export default {
                     otp_code: this.form.otp_code,
                 })
                 .then((response) => {
-                    this.$inertia.visit('http://aulavirtual-production.up.railway.app/api/otp');
+                    this.$inertia.visit(this.routeTo("/"));
                 })
                 .catch((error) => {
                     console.log(error.response);
