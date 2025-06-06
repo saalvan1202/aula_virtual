@@ -74,6 +74,7 @@ export default {
                     this.$inertia.visit(this.routeTo("/"));
                 })
                 .catch((error) => {
+                    window.location.reload();
                     console.log(error.response);
                 });
         },
