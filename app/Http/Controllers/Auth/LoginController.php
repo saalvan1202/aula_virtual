@@ -140,6 +140,8 @@ class LoginController extends Controller
 
         Auth::login($user);
 
-        return redirect()->intended($this->redirectPath());
+        return response()->json([
+            'message' => 'Inicio de sesión exitoso.',
+        ]);
     }
 }
