@@ -133,6 +133,12 @@
                             >
                                 Registrarse
                             </button>
+                            <button
+                                class="btn btn-secondary btn-block"
+                                @click.prevent="redirect('register-cliente')"
+                            >
+                                Registrarse como Cliente
+                            </button>
                         </form>
                     </div>
                 </div>

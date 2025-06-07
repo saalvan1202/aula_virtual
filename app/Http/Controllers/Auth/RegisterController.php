@@ -15,7 +15,8 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ContinuarRegistro; // Asegúrate de crear este Mailable
-
+use App\Mail\ContinuarRegistroCliente;
+use App\Models\TokensCorreoCliente;
 
 class RegisterController extends Controller
 {
@@ -84,6 +85,11 @@ class RegisterController extends Controller
         return Inertia::render('Auth/Register');
     }
 
+    public function cliente()
+    {
+        return Inertia::render('Auth/RegisterCliente');
+    }
+
     public function tokenError()
     {
         return Inertia::render('Auth/TokenError');
@@ -127,6 +133,38 @@ class RegisterController extends Controller
 
         // Enviar correo con el enlace
         Mail::to($user->email)->send(new ContinuarRegistro($user, $token));
+
+        return response()->json([
+            'message' => 'Se ha enviado un enlace a tu correo para continuar el registro.',
+        ], 200);
+    }
+
+    public function verificarDniEmailCliente(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ], []);
+
+        // verificar si el correo ya está registrado en la tabla usuarios
+        $user = User::where('email', $request->email)->first();
+
+        if ($user) {
+            return response()->json([
+                'message' => 'Este correo ya se encuentra registrado en el sistema.',
+            ], 400);
+        }
+
+        // Generar nuevo token
+        $token = \Str::random(60);
+
+        // Guardar nuevo token
+        TokensCorreoCliente::create([
+            'token' => $token,
+        ]);
+
+
+        // Enviar correo con el enlace
+        Mail::to($request->email)->send(new ContinuarRegistroCliente($token));
 
         return response()->json([
             'message' => 'Se ha enviado un enlace a tu correo para continuar el registro.',
