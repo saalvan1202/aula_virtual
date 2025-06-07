@@ -123,7 +123,7 @@ export default {
             this.isSubmitting = true;
 
             this.$http
-                .post(this.routeTo("registro/verificar"), {
+                .post(this.routeTo("registro/verificar-cliente"), {
                     email: this.form.email,
                 })
                 .then((response) => {

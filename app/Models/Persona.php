@@ -12,7 +12,7 @@ class Persona extends Model
     protected $fillable=[
         'id_tipo_documento_identidad','nombres','apellido_paterno',
         'apellido_materno','numero_documento','fecha_nacimiento',
-        'sexo','estado_civil'
+        'sexo','estado_civil',
     ];
     public function getApellidosCompletosAttribute()
     {

@@ -59,7 +59,9 @@ Route::get('/register', [RegisterController::class, 'index'])->name('register.in
 Route::get('/register-cliente', [RegisterController::class, 'cliente'])->name('register.cliente');
 Route::get('/token-error', [RegisterController::class, 'tokenError'])->name('register.token-error');
 Route::get('/continuar-registro/{token}', [RegisterController::class, 'continuarRegistro'])->name('registro.continuar-registro');
+Route::get('/continuar-registro-cliente/{token}', [RegisterController::class, 'continuarRegistroCliente'])->name('registro.continuar-registro-cliente');
 Route::post('/finalizar-registro/{token}', [RegisterController::class, 'finalizarRegistro'])->name('registro.finalizar-registro');
+Route::post('/finalizar-registro-cliente/{token}', [RegisterController::class, 'finalizarRegistroCliente'])->name('registro.finalizar-registro-cliente');
 Route::post('/registro/verificar', [RegisterController::class, 'verificarDniEmail'])->name('registro.verificar');
 Route::post('/registro/verificar-cliente', [RegisterController::class, 'verificarDniEmailCliente'])->name('registro.verificar-cliente');
 Route::get('otp', [LoginController::class, 'showOtpForm'])->name('otp.form');

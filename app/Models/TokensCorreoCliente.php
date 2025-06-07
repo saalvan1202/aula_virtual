@@ -8,6 +8,6 @@ class TokensCorreoCliente extends Model
 {
     protected $table='tokens_correo_clientes';
     protected $fillable=[
-        'token'
+        'token','email'
     ];
 }

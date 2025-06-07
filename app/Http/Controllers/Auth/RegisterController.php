@@ -160,6 +160,7 @@ class RegisterController extends Controller
         // Guardar nuevo token
         TokensCorreoCliente::create([
             'token' => $token,
+            'email' => $request->email,
         ]);
 
 
@@ -196,6 +197,25 @@ class RegisterController extends Controller
 
         // Aquí puedes redirigir al usuario a una vista para completar su registro
         return Inertia::render('Auth/RegisterContinue', ['user' => $user, 'token' => $token]);
+    }
+
+    public function continuarRegistroCliente($token)
+    {
+        $tokenRecord = TokensCorreoCliente::where('token', $token)->first();
+
+        if (!$tokenRecord) {
+            return redirect()->route('register.token-error')->withErrors(['token' => 'El error se produjo debido a: Token inválido.']);
+        }
+
+        $createdAt = $tokenRecord->created_at;
+        $now = Carbon::now();
+
+        if ($now->diffInMinutes($createdAt) > 5) {
+            return redirect()->route('register.token-error')->withErrors(['token' => 'El error se produjo debido a: Token expirado.']);
+        }
+
+        // Aquí puedes redirigir al usuario a una vista para completar su registro
+        return Inertia::render('Auth/RegisterContinueCliente', ['email' => $tokenRecord->email ,'token' => $token]);
     }
 
     public function finalizarRegistro($token, Request $request)
@@ -248,6 +268,73 @@ class RegisterController extends Controller
 
         $user->password = bcrypt($request->password);
         $user->registro_completado = 'S';
+        $user->save();
+
+        $tokenRecord->delete();        
+
+        return response()->json(['message' => 'Registro finalizado con éxito. Su cuenta ha sido activada.'], 200);
+    }
+
+    public function finalizarRegistroCliente($token, Request $request)
+    {
+        $tokenRecord = TokensCorreoCliente::where('token', $token)->first();
+
+        if (!$tokenRecord) {
+            return redirect()->route('register.index')->withErrors(['token' => 'Token inválido.']);
+        }
+
+        $createdAt = $tokenRecord->created_at;
+        $now = Carbon::now();
+
+        if ($now->diffInMinutes($createdAt) > 5) {
+            $tokenRecord->delete();
+            return redirect()->route('register.index')->withErrors(['token' => 'Token expirado.']);
+        }
+
+        $request->validate([
+            'dni' => ['required', 'string', 'size:8', 'regex:/^\d{8}$/'],
+            'nombres' => ['required', 'string', 'min:1' , 'max:150', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u'],
+            'apellido_paterno' => ['required', 'string', 'min:1' , 'max:150', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u'],
+            'apellido_materno' => ['required', 'string', 'min:1' , 'max:150', 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/u'],
+            'sexo' => ['required', 'string', 'in:M,F'],
+            //agrega validacion para el username
+            'email' => ['required', 'email', 'max:255', 'unique:usuarios,email'],
+            'password' => [
+                'required',
+                'string',
+                Password::min(8)    
+                    ->mixedCase()     
+                    ->numbers()    
+                    ->symbols(),      
+                'confirmed',           
+            ],
+        ],[], [
+            'password' => 'contraseña',
+        ]);
+
+        // Crea persona
+        $persona = new \App\Models\Persona();
+        $persona->nombres = $request->nombres;
+        $persona->apellido_paterno = $request->apellido_paterno;
+        $persona->apellido_materno = $request->apellido_materno;
+        $persona->sexo = $request->sexo;
+        $persona->numero_documento = $request->dni;
+        $persona->id_tipo_documento_identidad = 1;
+        $persona->estado = 'A'; // estado por defecto
+        $persona->save();
+
+        // crea usuario
+        $user = new \App\Models\User();
+        $user->id_perfil = 7;
+        $user->email = $tokenRecord->email;
+        $user->usuario = $request->email;
+        $user->id_tipo_contrato = 1;
+        $user->telefono = '';
+        $user->profesion = '';
+        $user->password = bcrypt($request->password);
+        $user->registro_completado = 'S';
+        $user->id_persona = $persona->id;
+        $user->estado = 'A';
         $user->save();
 
         $tokenRecord->delete();        

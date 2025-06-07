@@ -134,7 +134,7 @@
                                 Registrarse
                             </button>
                             <button
-                                class="btn btn-secondary btn-block"
+                                class="btn btn-dark btn-block"
                                 @click.prevent="redirect('register-cliente')"
                             >
                                 Registrarse como Cliente
