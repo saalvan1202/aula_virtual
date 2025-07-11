@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Mail\OtpCode;
+use App\Models\Dispositivo;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Jenssegers\Agent\Agent;
 
 class LoginController extends Controller
 {
@@ -61,17 +63,6 @@ class LoginController extends Controller
         $credentials = $request->only($this->username(), 'password');
         return array_merge($credentials, ['estado' => 'A']);
     }
-    // protected function authenticated(Request $request, $user)
-    // {
-    //     if ($user->registro_completado === 'N' && $user->id_perfil === 5) {
-    //         auth()->logout();
-
-    //         return redirect()->route('login')
-    //             ->withErrors([
-    //                 'usuario' => 'Esta cuenta no existe en el sistema',
-    //             ]);
-    //     }
-    // }
     public function login(Request $request)
     {
         $this->validateLogin($request);
@@ -95,6 +86,18 @@ class LoginController extends Controller
         }
 
         if ($user && Auth::validate($this->credentials($request))) {
+
+            // Verificar si la IP ya está registrada para el usuario
+            $dispositivoExistente = Dispositivo::where('id_usuario', $user->id)
+                ->where('ip', $request->ip())
+                ->where('estado', 'A')
+                ->exists();
+
+            if ($dispositivoExistente) {
+                // Iniciar sesión sin OTP
+                return Auth::login($user);
+            }
+
             //Generar OTP y guardar
             $otp = rand(100000, 999999); // 6 dígitos
             $user->otp_code = $otp;
@@ -139,6 +142,34 @@ class LoginController extends Controller
         $user->save();
 
         Auth::login($user);
+
+        // Obtener info del dispositivo
+        $agent = new Agent();
+        $agent->setUserAgent($request->header('User-Agent'));
+
+        $infoDispositivo = [
+            'ip' => $request->ip(),
+            'so' => $agent->platform(),
+            'version_so' => $agent->version($agent->platform()),
+            'dispositivo' => $agent->device(),
+            'es_movil' => $agent->isMobile(),
+            'es_escritorio' => $agent->isDesktop(),
+            'es_tablet' => $agent->isTablet(),
+        ];
+
+        $infoDispositivo = [
+            'id_usuario'    => $user->id,
+            'ip'            => $request->ip(),
+            'so'            => $agent->platform(),
+            'version_so'    => $agent->version($agent->platform()),
+            'dispositivo'   => $agent->device(),
+            'es_movil'      => $agent->isMobile(),
+            'es_escritorio' => $agent->isDesktop(),
+            'es_tablet'     => $agent->isTablet(),
+            'estado'        => 'A',
+        ];
+
+        Dispositivo::create($infoDispositivo);
 
         return response()->json([
             'message' => 'Inicio de sesión exitoso.',

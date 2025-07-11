@@ -74,10 +74,17 @@ class UsuarioController
     }
     public function account()
     {
-        return Inertia::render('User/Account',[
-            'user' => auth()->user()->load('perfil')->load(['persona'=>function($q){
-                $q->select('id','nombres','apellido_paterno','apellido_materno','numero_documento');
-            }])
+        return Inertia::render('User/Account', [
+            'user' => auth()->user()->load([
+                'perfil',
+                'persona' => function ($q) {
+                    $q->select('id', 'nombres', 'apellido_paterno', 'apellido_materno', 'numero_documento');
+                },
+                'dispositivos' => function ($q) {
+                    $q->where('estado', 'A'); // Si es booleano
+                    // $q->where('estado', 'A'); // Si tu campo 'estado' es tipo string
+                }
+            ])
         ]);
     }
     public function changeAccount(Request $request)
