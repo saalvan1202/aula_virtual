@@ -22,6 +22,8 @@
         "openspout/openspout": "^3.7",
         "p3dr0/fpdf": "dev-master",
         "rap2hpoutre/laravel-log-viewer": "*",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.6",
         "yajra/laravel-datatables-oracle": "~9.0"
     },
     "require-dev": {

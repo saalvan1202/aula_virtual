@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use setasign\Fpdi\Fpdi;
 
 class RecursoTareaEstudianteController extends Controller
 {
@@ -87,34 +88,6 @@ class RecursoTareaEstudianteController extends Controller
             }
         });
         $validatedData=$validator->validate();
-        /*try {
-            $validatedData = $request->validate([
-                'files_tarea' => 'required|array',
-                'files_tarea.*' => "file|max:8192|mimes:$extensionesPermitidas",
-                'id_curso_matricula' => 'required|integer',
-                'id_recurso_tarea' => 'required|integer',
-            ]);
-        } catch (ValidationException $e) {
-            $errors = $e->validator->errors();
-
-            // Personalizar los errores para files_tarea.*
-            if ($errors->has('files_tarea.*')) {
-                $files = $request->file('files_tarea');
-                foreach ($files as $index => $file) {
-                    $originalName = $file->getClientOriginalName();
-
-                    // Verificar si el archivo supera el tamaño máximo
-                    if ($file->getSize() > 8192 * 1024) {
-                        $errors->add("files_tarea.$index", "El archivo '$originalName' excede el tamaño máximo permitido de 8MB.");
-                    } else {
-                        // Error de tipo de archivo
-                        $errors->add("files_tarea.$index", "El archivo '$originalName' debe ser un archivo de tipo: $extensionesPermitidas.");
-                    }
-                }
-            }
-
-            throw $e; // Re-lanzar con mensajes personalizados
-        }*/
 
         $response = $guardarTarea->handle($validatedData);
 
@@ -145,6 +118,25 @@ class RecursoTareaEstudianteController extends Controller
                     $updateData['fecha_calificacion'] = null;
                 }
 
+                $rte = RecursoTareaEstudiante::find($calificacion['id']);
+                $archivo = $rte ? $rte->archivos : null;
+                if ($archivo && method_exists($archivo, 'getPathAttribute')) {
+                    $rutaOriginal = $archivo->path;
+                    $nuevoNombre = pathinfo($archivo->archivo, PATHINFO_FILENAME) . '.pdf';
+                    $nuevaRuta = dirname($rutaOriginal) . '/' . $nuevoNombre;
+                    $sello = public_path('sello.png');
+
+                    $this->sellarPdf($rutaOriginal, $nuevaRuta, $sello);
+
+                    // Actualiza el registro en la BD con el nuevo archivo
+                    $archivo->archivo = $nuevoNombre;
+                    $archivo->bytes = filesize($nuevaRuta);
+                    $archivo->save();
+
+                    // Opcional: elimina el archivo original si no lo necesitas
+                    // @unlink($rutaOriginal);
+                }
+
                 RecursoTareaEstudiante::where('id', $calificacion['id'])
                     ->update($updateData);
             }
@@ -159,7 +151,7 @@ class RecursoTareaEstudianteController extends Controller
             ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Hubo un error al actualizar las calificaciones.'], 500);
+            return response()->json(['message' => 'Hubo un error al actualizar las calificaciones.'. $e->getMessage()], 500);
         }
     }
 
@@ -177,5 +169,40 @@ class RecursoTareaEstudianteController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al eliminar la tarea.'], 500);
         }
+    }
+
+    // public function sellarPdf($inputPath, $outputPath, $selloPath)
+    // {
+    //     $pdf = new Fpdi();
+    //     $pageCount = $pdf->setSourceFile($inputPath);
+
+    //     for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+    //         $tplIdx = $pdf->importPage($pageNo);
+    //         $pdf->AddPage();
+    //         $pdf->useTemplate($tplIdx);
+
+    //         // Ajusta la posición y tamaño de la imagen según lo necesites
+    //         $pdf->Image($selloPath, 150, 10, 40, 40);
+    //     }
+    //     $pdf->Output('F', $outputPath);
+    // }
+    public function sellarPdf($inputPath, $outputPath, $selloPath)
+    {
+        $pdf = new Fpdi();
+        $pageCount = $pdf->setSourceFile($inputPath);
+
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $tplIdx = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($tplIdx);
+
+            // Dibuja un rectángulo para depuración
+            $pdf->SetDrawColor(255,0,0);
+            $pdf->Rect(10, 10, 40, 40, 'D');
+
+            // Intenta poner el sello en la esquina superior izquierda
+            $pdf->Image($selloPath, 10, 10, 40, 40);
+        }
+        $pdf->Output('F', $outputPath);
     }
 }
