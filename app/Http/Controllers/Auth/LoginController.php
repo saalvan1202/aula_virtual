@@ -103,7 +103,7 @@ class LoginController extends Controller
         //     $user->session_id = null; // Limpiar session_id si ha pasado más de 5 minutos
         //     $user->save();
         // }
-        if($user->session_id && $user->updated_at->diffInMinutes(now()) < 1){
+        if($user->session_id){
             if ($user && $user->session_id !== Session::getId()) {
                 auth()->logout();
                 return back()->withErrors([
@@ -181,7 +181,6 @@ class LoginController extends Controller
 
         $user->otp_code = null;
         $user->otp_expires_at = null;
-        Auth::attempt([...]);
         $user->session_id = Session::getId();
         $user->save();
         Cookie::queue('custom_session_id', Session::getId(), 60 * 24);

@@ -31,8 +31,8 @@ return [
     |
     */
 
-    'lifetime' => 120,
-    'expire_session' => 1,
+    'lifetime' => 2,
+    'expire_session' => 5,
 
     'expire_on_close' => false,
 

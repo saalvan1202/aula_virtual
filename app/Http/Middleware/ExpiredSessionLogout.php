@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Dispositivo;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -22,6 +23,10 @@ class ExpiredSessionLogout
     {
          $user = Auth::user();
          if($user){
+                $dispositivoExistente = Dispositivo::where('id_usuario', $user->id)
+            ->where('ip', $request->ip())
+            ->where('estado', 'A')
+            ->exists();
             if($user->updated_at && $user->updated_at->diffInMinutes(now()) >= 1){
                     $user->session_id = null;  // Limpiar session_id
                     $user->save();
