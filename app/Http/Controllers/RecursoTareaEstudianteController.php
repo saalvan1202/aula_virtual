@@ -118,24 +118,24 @@ class RecursoTareaEstudianteController extends Controller
                     $updateData['fecha_calificacion'] = null;
                 }
 
-                $rte = RecursoTareaEstudiante::find($calificacion['id']);
-                $archivo = $rte ? $rte->archivos : null;
-                if ($archivo && method_exists($archivo, 'getPathAttribute')) {
-                    $rutaOriginal = $archivo->path;
-                    $nuevoNombre = pathinfo($archivo->archivo, PATHINFO_FILENAME) . '_sellado.pdf';
-                    $nuevaRuta = dirname($rutaOriginal) . '/' . $nuevoNombre;
-                    $sello = public_path('sello.png');
+                // $rte = RecursoTareaEstudiante::find($calificacion['id']);
+                // $archivo = $rte ? $rte->archivos : null;
+                // if ($archivo && method_exists($archivo, 'getPathAttribute')) {
+                //     $rutaOriginal = $archivo->path;
+                //     $nuevoNombre = pathinfo($archivo->archivo, PATHINFO_FILENAME) . '_sellado.pdf';
+                //     $nuevaRuta = dirname($rutaOriginal) . '/' . $nuevoNombre;
+                //     $sello = public_path('sello.png');
 
-                    $this->sellarPdf($rutaOriginal, $nuevaRuta, $sello);
+                //     $this->sellarPdf($rutaOriginal, $nuevaRuta, $sello);
 
-                    // Actualiza el registro en la BD con el nuevo archivo
-                    $archivo->archivo = $nuevoNombre;
-                    $archivo->bytes = filesize($nuevaRuta);
-                    $archivo->save();
+                //     // Actualiza el registro en la BD con el nuevo archivo
+                //     $archivo->archivo = $nuevoNombre;
+                //     $archivo->bytes = filesize($nuevaRuta);
+                //     $archivo->save();
 
-                    // Opcional: elimina el archivo original si no lo necesitas
-                    // @unlink($rutaOriginal);
-                }
+                //     // Opcional: elimina el archivo original si no lo necesitas
+                //     // @unlink($rutaOriginal);
+                // }
 
                 RecursoTareaEstudiante::where('id', $calificacion['id'])
                     ->update($updateData);
