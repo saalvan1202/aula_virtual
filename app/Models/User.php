@@ -63,6 +63,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(TokensCorreo::class, 'usuario_id');
     }
+    public function dispositivos()
+    {
+        return $this->hasMany(Dispositivo::class, 'id_usuario');
+    }
     public function scopeJoinPersona($query)
     {
         return $query->join('personas','personas.id','=','usuarios.id_persona')

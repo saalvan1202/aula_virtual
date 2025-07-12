@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DispositivoController;
 use App\Http\Controllers\ModuloController;
 use App\Http\Controllers\NotificacionesController;
 use App\Http\Controllers\PermisoController;
@@ -33,6 +34,7 @@ Route::prefix('usuarios')->group(function () {
 Route::prefix('usuarios')->middleware(['auth.permission:docentes,usuarios,estudiantes'])->group(function () {
     Route::get('/buscar/dni/{dni}',[UsuarioController::class,'searchExternalDni'])->name('usuarios.search.dni');
 });
-Route::prefix('notificaciones')->group(function () {
-    Route::get('/', [NotificacionesController::class, 'getNotificaciones'])->name('notificaciones.getNotificaciones');
+Route::prefix('dispositivos')->group(function () {
+    Route::delete('/{id}', [DispositivoController::class, 'destroy'])->name('dispositivos.destroy');
 });
+
