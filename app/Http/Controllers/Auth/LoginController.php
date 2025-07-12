@@ -9,8 +9,10 @@ use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
 class LoginController extends Controller
@@ -71,6 +73,8 @@ class LoginController extends Controller
     //                 'usuario' => 'Esta cuenta no existe en el sistema',
     //             ]);
     //     }
+    //     $user->session_id = Session::getId();
+    //     $user->save();
     // }
     public function login(Request $request)
     {
@@ -92,6 +96,18 @@ class LoginController extends Controller
             return back()->withErrors([
                 $this->username() => 'Esta cuenta no existe en el sistema',
             ]);
+        }
+        // if($user->updated_at && $user->updated_at->diffInMinutes(now()) > config('session.lifetime')){
+        //     $user->session_id = null; // Limpiar session_id si ha pasado más de 5 minutos
+        //     $user->save();
+        // }
+        if($user->session_id && $user->updated_at->diffInMinutes(now()) < 1){
+            if ($user && $user->session_id !== Session::getId()) {
+                auth()->logout();
+                return back()->withErrors([
+                    $this->username() => 'Esta cuenta ya está siendo utilizada en otro dispositivo.',
+                ]);
+            }
         }
 
         if ($user && Auth::validate($this->credentials($request))) {
@@ -117,6 +133,21 @@ class LoginController extends Controller
             ]);
     }
 
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user) {
+            $user->session_id = null;  // Limpiar session_id
+            $user->save();
+        }
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
+    }
     public function showOtpForm()
     {
         return Inertia::render('Auth/OtpVerify');
@@ -136,8 +167,10 @@ class LoginController extends Controller
 
         $user->otp_code = null;
         $user->otp_expires_at = null;
+        Auth::attempt([...]);
+        $user->session_id = Session::getId();
         $user->save();
-
+        Cookie::queue('custom_session_id', Session::getId(), 60 * 24);
         Auth::login($user);
 
         return response()->json([
